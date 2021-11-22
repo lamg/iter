@@ -1,6 +1,7 @@
 package iter
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -77,4 +78,16 @@ func TestSurround(t *testing.T) {
 	p := NewSurround[string](xs, "(", ")")
 	sl := ToSlice[string](p)
 	r.Equal([]string{"(", "aeo", "uu", ")"}, sl)
+}
+
+func TestCompose(t *testing.T) {
+	r := require.New(t)
+	c0 := []string{"aeo", "uu"}
+	xs := NewSlice(c0)
+	p0 := Intersperse[string](xs, ",")
+	p1 := NewSurround(p0, "(", ")")
+	sl := ToSlice[string](p1)
+	r.Equal([]string{"(", "aeo", ",", "uu", ")"}, sl)
+	ss := strings.Join(c0, ",")
+	t.Log(ss)
 }
