@@ -14,12 +14,16 @@ func ToSlice[T any](p Iterator[T]) (rs []T) {
 	return
 }
 
-type MapIter[T any, U any] struct {
+type Map[T any, U any] struct {
 	xs Iterator[T]
 	f  func(T) U
 }
 
-func (r *MapIter[T, U]) Current() (m U, ok bool) {
+func NewMap[T any, U any](xs Iterator[T], f func(T) U) *Map[T, U] {
+	return &Map[T, U]{xs: xs, f: f}
+}
+
+func (r *Map[T, U]) Current() (m U, ok bool) {
 	n, ok := r.xs.Current()
 	if ok {
 		m = r.f(n)
@@ -33,7 +37,7 @@ type DropLast[T any] struct {
 	cn   bool
 }
 
-func newDropLast[T any](a Iterator[T]) *DropLast[T] {
+func NewDropLast[T any](a Iterator[T]) *DropLast[T] {
 	r := &DropLast[T]{a: a}
 	r.prev, r.cn = a.Current()
 	return r
@@ -53,17 +57,17 @@ func (r *DropLast[T]) Current() (m T, ok bool) {
 	return
 }
 
-type ZipIter[T any] struct {
+type Zip[T any] struct {
 	a, b Iterator[T]
 	ca   bool // consume from a
 	cn   bool // consume from next
 }
 
-func NewZipIter[T any](a, b Iterator[T]) *ZipIter[T] {
-	return &ZipIter[T]{a: a, b: b, ca: true, cn: true}
+func NewZip[T any](a, b Iterator[T]) *Zip[T] {
+	return &Zip[T]{a: a, b: b, ca: true, cn: true}
 }
 
-func (r *ZipIter[T]) Current() (curr T, ok bool) {
+func (r *Zip[T]) Current() (curr T, ok bool) {
 	if r.cn {
 		if r.ca {
 			curr, ok = r.a.Current()
@@ -77,25 +81,29 @@ func (r *ZipIter[T]) Current() (curr T, ok bool) {
 	return
 }
 
-type ConstIter[T any] struct {
+type Const[T any] struct {
 	curr T
 }
 
-func (r *ConstIter[T]) Current() (x T, ok bool) {
+func NewConst[T any](c T) *Const[T] {
+	return &Const[T]{curr: c}
+}
+
+func (r *Const[T]) Current() (x T, ok bool) {
 	x, ok = r.curr, true
 	return
 }
 
-type SliceIter[T any] struct {
+type Slice[T any] struct {
 	xs []T
 	i  int
 }
 
-func NewSliceIter[T any](xs []T) *SliceIter[T] {
-	return &SliceIter[T]{xs: xs}
+func NewSlice[T any](xs []T) *Slice[T] {
+	return &Slice[T]{xs: xs}
 }
 
-func (p *SliceIter[T]) Current() (m T, ok bool) {
+func (p *Slice[T]) Current() (m T, ok bool) {
 	ok = p.i != len(p.xs)
 	if ok {
 		m, p.i = p.xs[p.i], p.i+1
@@ -104,6 +112,6 @@ func (p *SliceIter[T]) Current() (m T, ok bool) {
 }
 
 func Intersperse[T any](xs Iterator[T], x T) (rs Iterator[T]) {
-	rs = newDropLast[T](NewZipIter[T](xs, &ConstIter[T]{curr: x}))
+	rs = NewDropLast[T](NewZip[T](xs, NewConst(x)))
 	return
 }

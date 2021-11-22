@@ -22,7 +22,7 @@ func TestDropLast(t *testing.T) {
 		},
 	}
 	for _, j := range ts {
-		xsi := newDropLast[string](NewSliceIter(j.xs))
+		xsi := NewDropLast[string](NewSlice(j.xs))
 		ms := ToSlice[string](xsi)
 		r.Equal(j.rs, ms)
 	}
@@ -39,9 +39,9 @@ func TestZip(t *testing.T) {
 		{xs: []string{"a", "b"}, rs: []string{"a", ",", "b", ","}},
 	}
 	for _, j := range ts {
-		xsi := NewSliceIter(j.xs)
-		ct := &ConstIter[string]{curr: ","}
-		zi := NewZipIter[string](xsi, ct)
+		xsi := NewSlice(j.xs)
+		ct := NewConst(",")
+		zi := NewZip[string](xsi, ct)
 		ms := ToSlice[string](zi)
 		r.Equal(j.rs, ms)
 	}
@@ -57,20 +57,15 @@ func TestIntersperse(t *testing.T) {
 		{xs: []string{"a", "b"}, rs: []string{"a", ",", "b"}},
 	}
 	for _, j := range ts {
-		xsi := Intersperse[string](NewSliceIter(j.xs), ",")
+		xsi := Intersperse[string](NewSlice(j.xs), ",")
 		ms := ToSlice(xsi)
 		r.Equal(j.rs, ms)
 	}
 }
 
 func TestMap(t *testing.T) {
-	xs := NewSliceIter([]string{"aeo", "uu"})
-	mi := &MapIter[string, string]{xs: xs, f: func(s string) string { return s + "kkkk" }}
-	var xi Iterator[string]
-	xi = mi
-	c, ok := xi.Current()
-	for ok {
-		t.Log(c)
-		c, ok = xi.Current()
-	}
+	xs := NewSlice([]string{"aeo", "uu"})
+	mi := NewMap[string](xs, func(s string) string { return s + "kkkk" })
+	sl := ToSlice[string](mi)
+	t.Log(sl)
 }
