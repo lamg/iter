@@ -115,3 +115,25 @@ func Intersperse[T any](xs Iterator[T], x T) (rs Iterator[T]) {
 	rs = NewDropLast[T](NewZip[T](xs, NewConst(x)))
 	return
 }
+
+type Surround[T any] struct {
+	xs          Iterator[T]
+	a, b        T
+	first, last bool
+}
+
+func NewSurround[T any](xs Iterator[T], a, b T) *Surround[T] {
+	return &Surround[T]{xs: xs, a: a, b: b}
+}
+
+func (p *Surround[T]) Current() (m T, ok bool) {
+	if !p.first {
+		m, ok, p.first = p.a, true, true
+	} else if !p.last {
+		m, ok = p.xs.Current()
+		if !ok {
+			m, ok, p.last = p.b, true, true
+		}
+	}
+	return
+}

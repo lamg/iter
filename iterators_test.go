@@ -26,7 +26,6 @@ func TestDropLast(t *testing.T) {
 		ms := ToSlice[string](xsi)
 		r.Equal(j.rs, ms)
 	}
-
 }
 
 func TestZip(t *testing.T) {
@@ -64,8 +63,18 @@ func TestIntersperse(t *testing.T) {
 }
 
 func TestMap(t *testing.T) {
+	r := require.New(t)
+	const tail = "kkkk"
 	xs := NewSlice([]string{"aeo", "uu"})
-	mi := NewMap[string](xs, func(s string) string { return s + "kkkk" })
-	sl := ToSlice[string](mi)
-	t.Log(sl)
+	p := NewMap[string](xs, func(s string) string { return s + tail })
+	sl := ToSlice[string](p)
+	r.Equal([]string{"aeo" + tail, "uu" + tail}, sl)
+}
+
+func TestSurround(t *testing.T) {
+	r := require.New(t)
+	xs := NewSlice([]string{"aeo", "uu"})
+	p := NewSurround[string](xs, "(", ")")
+	sl := ToSlice[string](p)
+	r.Equal([]string{"(", "aeo", "uu", ")"}, sl)
 }
