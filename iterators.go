@@ -4,6 +4,46 @@ type Iterator[T any] interface {
 	Current() (T, bool)
 }
 
+type BLS[T any] struct {
+	xs Iterator[T]
+	f  func(T) bool
+}
+
+func (b *BLS[T]) Current() (m T, ok bool) {
+	m, ok = b.xs.Current()
+	ok = ok && b.f(m)
+	return
+}
+
+func Exec(fs Iterator[func()]) {
+	m, ok := fs.Current()
+	for ok {
+		m()
+		m, ok = fs.Current()
+	}
+}
+
+type concat[T any] struct {
+	a, b Iterator[T]
+	okA  bool
+}
+
+func (c *concat[T]) Current() (m T, ok bool) {
+	if c.okA {
+		m, ok = c.a.Current()
+		c.okA = ok
+	}
+	if !c.okA {
+		m, ok = c.b.Current()
+	}
+	return
+}
+
+func Concat[T any](a, b Iterator[T]) (c Iterator[T]) {
+	c = &concat[T]{a: a, b: b}
+	return
+}
+
 func ToSlice[T any](p Iterator[T]) (rs []T) {
 	m, ok := p.Current()
 	rs = make([]T, 0)
