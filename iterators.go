@@ -28,23 +28,22 @@ func Exec(fs Iterator[func()]) {
 }
 
 type concat[T any] struct {
-	a, b Iterator[T]
-	okA  bool
+	xs   []Iterator[T]
+	curr int
 }
 
 func (c *concat[T]) Current() (m T, ok bool) {
-	if c.okA {
-		m, ok = c.a.Current()
-		c.okA = ok
-	}
-	if !c.okA {
-		m, ok = c.b.Current()
+	for !ok && c.curr != len(c.xs) {
+		m, ok = c.xs[c.curr].Current()
+		if !ok {
+			c.curr = c.curr + 1
+		}
 	}
 	return
 }
 
-func Concat[T any](a, b Iterator[T]) (c Iterator[T]) {
-	c = &concat[T]{a: a, b: b}
+func Concat[T any](xs ...Iterator[T]) (c Iterator[T]) {
+	c = &concat[T]{xs: xs, curr: 0}
 	return
 }
 
