@@ -54,16 +54,16 @@ func ToSlice[T any](p Iterator[T]) (rs []T) {
 	return
 }
 
-type Map[T any, U any] struct {
+type mapi[T any, U any] struct {
 	xs Iterator[T]
 	f  func(T) U
 }
 
-func NewMap[T any, U any](xs Iterator[T], f func(T) U) *Map[T, U] {
-	return &Map[T, U]{xs: xs, f: f}
+func Map[T any, U any](xs Iterator[T], f func(T) U) Iterator[U] {
+	return &mapi[T, U]{xs: xs, f: f}
 }
 
-func (r *Map[T, U]) Current() (m U, ok bool) {
+func (r *mapi[T, U]) Current() (m U, ok bool) {
 	n, ok := r.xs.Current()
 	if ok {
 		m = r.f(n)

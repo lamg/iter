@@ -67,8 +67,8 @@ func TestMap(t *testing.T) {
 	r := require.New(t)
 	const tail = "kkkk"
 	xs := NewSlice([]string{"aeo", "uu"})
-	p := NewMap[string](xs, func(s string) string { return s + tail })
-	sl := ToSlice[string](p)
+	p := Map[string](xs, func(s string) string { return s + tail })
+	sl := ToSlice(p)
 	r.Equal([]string{"aeo" + tail, "uu" + tail}, sl)
 }
 
