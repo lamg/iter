@@ -4,12 +4,16 @@ type Iterator[T any] interface {
 	Current() (T, bool)
 }
 
-type BLS[T any] struct {
+type bls[T any] struct {
 	xs Iterator[T]
 	f  func(T) bool
 }
 
-func (b *BLS[T]) Current() (m T, ok bool) {
+func BLS[T any](xs Iterator[T], f func(T) bool) Iterator[T] {
+	return &bls[T]{xs: xs, f: f}
+}
+
+func (b *bls[T]) Current() (m T, ok bool) {
 	m, ok = b.xs.Current()
 	ok = ok && b.f(m)
 	return
@@ -71,19 +75,19 @@ func (r *mapi[T, U]) Current() (m U, ok bool) {
 	return
 }
 
-type DropLast[T any] struct {
+type dropLast[T any] struct {
 	a    Iterator[T]
 	prev T
 	cn   bool
 }
 
-func NewDropLast[T any](a Iterator[T]) *DropLast[T] {
-	r := &DropLast[T]{a: a}
+func DropLast[T any](a Iterator[T]) Iterator[T] {
+	r := &dropLast[T]{a: a}
 	r.prev, r.cn = a.Current()
 	return r
 }
 
-func (r *DropLast[T]) Current() (m T, ok bool) {
+func (r *dropLast[T]) Current() (m T, ok bool) {
 	var curr T
 	if r.cn {
 		curr, ok = r.a.Current()
@@ -97,17 +101,17 @@ func (r *DropLast[T]) Current() (m T, ok bool) {
 	return
 }
 
-type Zip[T any] struct {
+type zip[T any] struct {
 	a, b Iterator[T]
 	ca   bool // consume from a
 	cn   bool // consume from next
 }
 
-func NewZip[T any](a, b Iterator[T]) *Zip[T] {
-	return &Zip[T]{a: a, b: b, ca: true, cn: true}
+func Zip[T any](a, b Iterator[T]) Iterator[T] {
+	return &zip[T]{a: a, b: b, ca: true, cn: true}
 }
 
-func (r *Zip[T]) Current() (curr T, ok bool) {
+func (r *zip[T]) Current() (curr T, ok bool) {
 	if r.cn {
 		if r.ca {
 			curr, ok = r.a.Current()
@@ -121,29 +125,29 @@ func (r *Zip[T]) Current() (curr T, ok bool) {
 	return
 }
 
-type Const[T any] struct {
+type consti[T any] struct {
 	curr T
 }
 
-func NewConst[T any](c T) *Const[T] {
-	return &Const[T]{curr: c}
+func Const[T any](c T) Iterator[T] {
+	return &consti[T]{curr: c}
 }
 
-func (r *Const[T]) Current() (x T, ok bool) {
+func (r *consti[T]) Current() (x T, ok bool) {
 	x, ok = r.curr, true
 	return
 }
 
-type Slice[T any] struct {
+type slice[T any] struct {
 	xs []T
 	i  int
 }
 
-func NewSlice[T any](xs []T) *Slice[T] {
-	return &Slice[T]{xs: xs}
+func Slice[T any](xs []T) Iterator[T] {
+	return &slice[T]{xs: xs}
 }
 
-func (p *Slice[T]) Current() (m T, ok bool) {
+func (p *slice[T]) Current() (m T, ok bool) {
 	ok = p.i != len(p.xs)
 	if ok {
 		m, p.i = p.xs[p.i], p.i+1
@@ -152,21 +156,21 @@ func (p *Slice[T]) Current() (m T, ok bool) {
 }
 
 func Intersperse[T any](xs Iterator[T], x T) (rs Iterator[T]) {
-	rs = NewDropLast[T](NewZip[T](xs, NewConst(x)))
+	rs = DropLast(Zip(xs, Const(x)))
 	return
 }
 
-type Surround[T any] struct {
+type surround[T any] struct {
 	xs          Iterator[T]
 	a, b        T
 	first, last bool
 }
 
-func NewSurround[T any](xs Iterator[T], a, b T) *Surround[T] {
-	return &Surround[T]{xs: xs, a: a, b: b}
+func Surround[T any](xs Iterator[T], a, b T) Iterator[T] {
+	return &surround[T]{xs: xs, a: a, b: b}
 }
 
-func (p *Surround[T]) Current() (m T, ok bool) {
+func (p *surround[T]) Current() (m T, ok bool) {
 	if !p.first {
 		m, ok, p.first = p.a, true, true
 	} else if !p.last {
