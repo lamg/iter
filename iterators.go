@@ -28,22 +28,25 @@ func Exec(fs Iterator[func()]) {
 }
 
 type concat[T any] struct {
-	xs   []Iterator[T]
-	curr int
+	xs   Iterator[Iterator[T]]
+	curr Iterator[T]
+	ok   bool
 }
 
 func (c *concat[T]) Current() (m T, ok bool) {
-	for !ok && c.curr != len(c.xs) {
-		m, ok = c.xs[c.curr].Current()
+	for c.ok && !ok {
+		m, ok = c.curr.Current()
 		if !ok {
-			c.curr = c.curr + 1
+			c.curr, c.ok = c.xs.Current()
 		}
 	}
 	return
 }
 
-func Concat[T any](xs ...Iterator[T]) (c Iterator[T]) {
-	c = &concat[T]{xs: xs, curr: 0}
+func Concat[T any](xs Iterator[Iterator[T]]) (c Iterator[T]) {
+	x := &concat[T]{xs: xs}
+	x.curr, x.ok = xs.Current()
+	c = x
 	return
 }
 
@@ -54,6 +57,7 @@ func ToSlice[T any](p Iterator[T]) (rs []T) {
 		rs = append(rs, m)
 		m, ok = p.Current()
 	}
+
 	return
 }
 
@@ -144,6 +148,10 @@ type slice[T any] struct {
 
 func Slice[T any](xs []T) Iterator[T] {
 	return &slice[T]{xs: xs}
+}
+
+func Args[T any](xs ...T) Iterator[T] {
+	return Slice(xs)
 }
 
 func (p *slice[T]) Current() (m T, ok bool) {

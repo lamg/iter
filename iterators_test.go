@@ -94,6 +94,7 @@ func TestCompose(t *testing.T) {
 
 func TestConcat(t *testing.T) {
 	r := require.New(t)
-	xs := ToSlice(Concat(Slice([]int{0, 1, 2}), Slice([]int{3, 4}), Slice([]int{5})))
+	its := Args(Slice([]int{0, 1, 2}), Slice([]int{3, 4}), Slice([]int{5}))
+	xs := ToSlice(Concat(its))
 	r.Equal([]int{0, 1, 2, 3, 4, 5}, xs)
 }
