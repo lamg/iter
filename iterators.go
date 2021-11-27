@@ -19,14 +19,6 @@ func (b *bls[T]) Current() (m T, ok bool) {
 	return
 }
 
-func Exec(fs Iterator[func()]) {
-	m, ok := fs.Current()
-	for ok {
-		m()
-		m, ok = fs.Current()
-	}
-}
-
 type concat[T any] struct {
 	xs   Iterator[Iterator[T]]
 	curr Iterator[T]
