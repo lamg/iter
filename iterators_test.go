@@ -1,7 +1,6 @@
 package iter
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
