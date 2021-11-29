@@ -30,7 +30,7 @@ func TestExecWhileNoErr(t *testing.T) {
 		func() { x++ },
 		func() { x++ },
 		func() {
-			if x == 20 { // 20 ≡ 2 mod(3)
+			if x == 20 { // 20 ≡ 2 (mod 3)
 				e = fmt.Errorf("bla")
 			}
 		},
