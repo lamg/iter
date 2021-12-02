@@ -98,3 +98,11 @@ func TestConcat(t *testing.T) {
 	xs := ToSlice(Concat(its))
 	r.Equal([]int{0, 1, 2, 3, 4, 5}, xs)
 }
+
+func TestFilter(t *testing.T) {
+	r := require.New(t)
+	ns := []int{0, 1, 2, 3, 4, 5}
+	xs := Filter(Slice(ns), func(n int) bool { return n > 2 })
+	rs := ToSlice(xs)
+	r.Equal([]int{3, 4, 5}, rs)
+}

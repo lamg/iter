@@ -12,7 +12,10 @@ func Exec(fs Iterator[func()]) {
 // guard is called before every execution of fs members
 func I(guard func() bool, fs ...func()) (reachedLast bool) {
 	i := 0
-	Exec(BLS(Slice(fs), func(_ func()) bool { i++; return guard() }))
+	for i != len(fs) && guard() {
+		fs[i]()
+		i = i + 1
+	}
 	reachedLast = i == len(fs)
 	return
 }

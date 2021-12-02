@@ -4,18 +4,22 @@ type Iterator[T any] interface {
 	Current() (T, bool)
 }
 
-type bls[T any] struct {
+type filter[T any] struct {
 	xs Iterator[T]
 	f  func(T) bool
 }
 
-func BLS[T any](xs Iterator[T], f func(T) bool) Iterator[T] {
-	return &bls[T]{xs: xs, f: f}
+func Filter[T any](xs Iterator[T], f func(T) bool) Iterator[T] {
+	return &filter[T]{xs: xs, f: f}
 }
 
-func (b *bls[T]) Current() (m T, ok bool) {
+func (b *filter[T]) Current() (m T, ok bool) {
 	m, ok = b.xs.Current()
-	ok = ok && b.f(m)
+	found := b.f(m)
+	for ok && !found {
+		m, ok = b.xs.Current()
+		found = ok && b.f(m)
+	}
 	return
 }
 
