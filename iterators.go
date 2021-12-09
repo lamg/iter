@@ -4,6 +4,15 @@ type Iterator[T any] interface {
 	Current() (T, bool)
 }
 
+type itc[T any] struct {
+	xs Iterator[T]
+}
+
+func (p *itc[T]) Filter(f func(T) bool) (r *itc[T]) {
+	r = &itc[T]{xs: &filter[T]{xs: p.xs, f: f}}
+	return
+}
+
 type filter[T any] struct {
 	xs Iterator[T]
 	f  func(T) bool
