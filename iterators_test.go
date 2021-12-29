@@ -15,6 +15,13 @@ func TestFilter(t *testing.T) {
 	r.Equal([]int{3, 4, 5}, rs)
 }
 
+func TestConcat(t *testing.T) {
+	r := require.New(t)
+	its := Args(Slice([]int{0, 1, 2}), Slice([]int{3, 4}), Slice([]int{5}))
+	xs := ToSlice(Concat(its))
+	r.Equal([]int{0, 1, 2, 3, 4, 5}, xs)
+}
+
 //func TestDropLast(t *testing.T) {
 //	r := require.New(t)
 //	ts := []struct {
@@ -98,12 +105,5 @@ func TestFilter(t *testing.T) {
 //	r.Equal([]string{"(", "aeo", ",", "uu", ")"}, sl)
 //	ss := strings.Join(c0, ",")
 //	t.Log(ss)
-//}
-//
-//func TestConcat(t *testing.T) {
-//	r := require.New(t)
-//	its := Args(Slice([]int{0, 1, 2}), Slice([]int{3, 4}), Slice([]int{5}))
-//	xs := ToSlice(Concat(its))
-//	r.Equal([]int{0, 1, 2, 3, 4, 5}, xs)
 //}
 //
