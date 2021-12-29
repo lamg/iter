@@ -31,27 +31,32 @@ func TestMap(t *testing.T) {
 	r.Equal([]string{"aeo" + tail, "uu" + tail}, sl)
 }
 
-//func TestDropLast(t *testing.T) {
-//	r := require.New(t)
-//	ts := []struct {
-//		xs []string
-//		rs []string
-//	}{
-//		{
-//			xs: []string{"bla"},
-//			rs: []string{},
-//		},
-//		{
-//			xs: []string{"bla", "Bli"},
-//			rs: []string{"bla"},
-//		},
-//	}
-//	for _, j := range ts {
-//		xsi := DropLast(Slice(j.xs))
-//		ms := ToSlice(xsi)
-//		r.Equal(j.rs, ms)
-//	}
-//}
+func TestDropLast(t *testing.T) {
+	r := require.New(t)
+	ts := []struct {
+		xs []string
+		rs []string
+	}{
+		{
+			xs: []string{"bla"},
+			rs: []string{},
+		},
+		{
+			xs: []string{"bla", "Bli"},
+			rs: []string{"bla"},
+		},
+		{
+			xs: []string{},
+			rs: []string{},
+		},
+	}
+	for _, j := range ts {
+		xsi := DropLast(Slice(j.xs))
+		ms := ToSlice(xsi)
+		r.Equal(j.rs, ms)
+	}
+}
+
 //
 //func TestZip(t *testing.T) {
 //	r := require.New(t)

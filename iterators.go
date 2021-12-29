@@ -139,33 +139,35 @@ func (r *mapi[T, U]) Next() {
 // DropLast iterator definition
 
 type dropLast[T any] struct {
-	a    Iterator[T]
-	prev T
-	cn   bool
+	xs      Iterator[T]
+	m0, m1  T
+	hasNext bool // or m0 is last
 }
 
-func DropLast[T any](a Iterator[T]) Iterator[T] {
-	r := &dropLast[T]{a: a}
-	r.prev, r.cn = a.Current()
+func DropLast[T any](xs Iterator[T]) Iterator[T] {
+	r := &dropLast[T]{xs: xs}
+	var ok bool
+	r.m0, ok = xs.Current()
+	if ok {
+		xs.Next()
+		r.m1, r.hasNext = xs.Current()
+	}
 	return r
 }
 
 func (r *dropLast[T]) Current() (m T, ok bool) {
-	var curr T
-	if r.cn {
-		curr, ok = r.a.Current()
-		if !ok {
-			r.cn = false
-		} else {
-			m, ok = r.prev, true
-			r.prev = curr
-		}
+	if r.hasNext {
+		m, ok = r.m0, true
 	}
 	return
 }
 
 func (r *dropLast[T]) Next() {
-
+	if r.hasNext {
+		r.m0 = r.m1
+		r.xs.Next()
+		r.m1, r.hasNext = r.xs.Current()
+	}
 }
 
 // end
