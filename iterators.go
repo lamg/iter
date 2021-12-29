@@ -263,9 +263,9 @@ func (p *surround[T]) Next() {
 
 // Intersperse iterator definition
 
-//func Intersperse[T any](xs Iterator[T], x T) (rs Iterator[T]) {
-//	rs = DropLast(Zip(xs, Const(x)))
-//	return
-//}
+func Intersperse[T any](xs Iterator[T], x T) (rs Iterator[T]) {
+	rs = DropLast(Zip(xs, Const(x)))
+	return
+}
 
 // end
