@@ -2,16 +2,55 @@ package iter
 
 type Iterator[T any] interface {
 	Current() (T, bool)
+	Next()
 }
 
-type itc[T any] struct {
-	xs Iterator[T]
+// Slice iterator definition
+
+type slice[T any] struct {
+	xs []T
+	i  int
+	ok bool
 }
 
-func (p *itc[T]) Filter(f func(T) bool) (r *itc[T]) {
-	r = &itc[T]{xs: &filter[T]{xs: p.xs, f: f}}
+func Slice[T any](xs []T) Iterator[T] {
+	return &slice[T]{xs: xs, ok: len(xs) != 0}
+}
+
+func Args[T any](xs ...T) Iterator[T] {
+	return Slice(xs)
+}
+
+func (p *slice[T]) Current() (m T, ok bool) {
+	ok = p.ok
+	if ok {
+		m = p.xs[p.i]
+	}
 	return
 }
+
+func (p *slice[T]) Next() {
+	if p.ok {
+		p.i = p.i + 1
+	}
+	p.ok = p.i != len(p.xs)
+}
+
+func ToSlice[T any](p Iterator[T]) (rs []T) {
+	m, ok := p.Current()
+	rs = make([]T, 0)
+	for ok {
+		rs = append(rs, m)
+		p.Next()
+		m, ok = p.Current()
+	}
+
+	return
+}
+
+// end
+
+// Filter iterator definition
 
 type filter[T any] struct {
 	xs Iterator[T]
@@ -24,47 +63,55 @@ func Filter[T any](xs Iterator[T], f func(T) bool) Iterator[T] {
 
 func (b *filter[T]) Current() (m T, ok bool) {
 	m, ok = b.xs.Current()
-	found := b.f(m)
+	found := ok && b.f(m)
 	for ok && !found {
+		b.xs.Next()
 		m, ok = b.xs.Current()
 		found = ok && b.f(m)
 	}
 	return
 }
 
+func (b *filter[T]) Next() {
+	b.xs.Next()
+}
+
+// end
+
+// Concat iterator definition
+
+func Concat[T any](xs Iterator[Iterator[T]]) (c Iterator[T]) {
+	c = &concat[T]{xs: xs}
+	return
+}
+
 type concat[T any] struct {
-	xs   Iterator[Iterator[T]]
-	curr Iterator[T]
-	ok   bool
+	xs Iterator[Iterator[T]]
 }
 
 func (c *concat[T]) Current() (m T, ok bool) {
-	for c.ok && !ok {
-		m, ok = c.curr.Current()
-		if !ok {
-			c.curr, c.ok = c.xs.Current()
+	curr, okXs := c.xs.Current()
+	m, ok = curr.Current()
+	for okXs && !ok {
+		c.xs.Next()
+		curr, okXs = c.xs.Current()
+		if okXs {
+			m, ok = curr.Current()
 		}
 	}
 	return
 }
 
-func Concat[T any](xs Iterator[Iterator[T]]) (c Iterator[T]) {
-	x := &concat[T]{xs: xs}
-	x.curr, x.ok = xs.Current()
-	c = x
-	return
-}
-
-func ToSlice[T any](p Iterator[T]) (rs []T) {
-	m, ok := p.Current()
-	rs = make([]T, 0)
-	for ok {
-		rs = append(rs, m)
-		m, ok = p.Current()
+func (c *concat[T]) Next() {
+	curr, ok := c.xs.Current()
+	if ok {
+		curr.Next()
 	}
-
-	return
 }
+
+// end
+
+// Map iterator definition
 
 type mapi[T any, U any] struct {
 	xs Iterator[T]
@@ -82,6 +129,14 @@ func (r *mapi[T, U]) Current() (m U, ok bool) {
 	}
 	return
 }
+
+func (r *mapi[T, U]) Next() {
+	r.Next()
+}
+
+// end
+
+// DropLast iterator definition
 
 type dropLast[T any] struct {
 	a    Iterator[T]
@@ -109,6 +164,14 @@ func (r *dropLast[T]) Current() (m T, ok bool) {
 	return
 }
 
+func (r *dropLast[T]) Next() {
+
+}
+
+// end
+
+// Zip iterator definition
+/*
 type zip[T any] struct {
 	a, b Iterator[T]
 	ca   bool // consume from a
@@ -133,6 +196,15 @@ func (r *zip[T]) Current() (curr T, ok bool) {
 	return
 }
 
+func (r *zip[T]) Next() {
+	//
+}
+*/
+
+// end
+
+// Const iterator definition
+
 type consti[T any] struct {
 	curr T
 }
@@ -146,32 +218,14 @@ func (r *consti[T]) Current() (x T, ok bool) {
 	return
 }
 
-type slice[T any] struct {
-	xs []T
-	i  int
+func (r *consti[T]) Next() {
+
 }
 
-func Slice[T any](xs []T) Iterator[T] {
-	return &slice[T]{xs: xs}
-}
+// end
 
-func Args[T any](xs ...T) Iterator[T] {
-	return Slice(xs)
-}
-
-func (p *slice[T]) Current() (m T, ok bool) {
-	ok = p.i != len(p.xs)
-	if ok {
-		m, p.i = p.xs[p.i], p.i+1
-	}
-	return
-}
-
-func Intersperse[T any](xs Iterator[T], x T) (rs Iterator[T]) {
-	rs = DropLast(Zip(xs, Const(x)))
-	return
-}
-
+// Surround iterator definition
+/*
 type surround[T any] struct {
 	xs          Iterator[T]
 	a, b        T
@@ -193,3 +247,15 @@ func (p *surround[T]) Current() (m T, ok bool) {
 	}
 	return
 }
+
+// end
+
+// Intersperse iterator definition
+*/
+
+//func Intersperse[T any](xs Iterator[T], x T) (rs Iterator[T]) {
+//	rs = DropLast(Zip(xs, Const(x)))
+//	return
+//}
+
+// end
