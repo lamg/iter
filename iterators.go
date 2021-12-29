@@ -173,35 +173,32 @@ func (r *dropLast[T]) Next() {
 // end
 
 // Zip iterator definition
-/*
+
 type zip[T any] struct {
 	a, b Iterator[T]
 	ca   bool // consume from a
-	cn   bool // consume from next
 }
 
 func Zip[T any](a, b Iterator[T]) Iterator[T] {
-	return &zip[T]{a: a, b: b, ca: true, cn: true}
+	return &zip[T]{a: a, b: b, ca: true}
 }
 
-func (r *zip[T]) Current() (curr T, ok bool) {
-	if r.cn {
-		if r.ca {
-			curr, ok = r.a.Current()
-			r.ca = false
-		} else {
-			curr, ok = r.b.Current()
-			r.ca = true
-		}
-		r.cn = ok
+func (r *zip[T]) Current() (m T, ok bool) {
+	if r.ca {
+		m, ok = r.a.Current()
+	} else {
+		m, ok = r.b.Current()
 	}
 	return
 }
 
 func (r *zip[T]) Next() {
-	//
+	if !r.ca {
+		r.a.Next()
+		r.b.Next()
+	}
+	r.ca = !r.ca
 }
-*/
 
 // end
 
