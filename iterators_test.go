@@ -22,6 +22,15 @@ func TestConcat(t *testing.T) {
 	r.Equal([]int{0, 1, 2, 3, 4, 5}, xs)
 }
 
+func TestMap(t *testing.T) {
+	r := require.New(t)
+	const tail = "kkkk"
+	xs := Slice([]string{"aeo", "uu"})
+	p := Map(xs, func(s string) string { return s + tail })
+	sl := ToSlice(p)
+	r.Equal([]string{"aeo" + tail, "uu" + tail}, sl)
+}
+
 //func TestDropLast(t *testing.T) {
 //	r := require.New(t)
 //	ts := []struct {
@@ -78,14 +87,6 @@ func TestConcat(t *testing.T) {
 //	}
 //}
 //
-//func TestMap(t *testing.T) {
-//	r := require.New(t)
-//	const tail = "kkkk"
-//	xs := Slice([]string{"aeo", "uu"})
-//	p := Map(xs, func(s string) string { return s + tail })
-//	sl := ToSlice(p)
-//	r.Equal([]string{"aeo" + tail, "uu" + tail}, sl)
-//}
 //
 //func TestSurround(t *testing.T) {
 //	r := require.New(t)

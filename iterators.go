@@ -131,7 +131,7 @@ func (r *mapi[T, U]) Current() (m U, ok bool) {
 }
 
 func (r *mapi[T, U]) Next() {
-	r.Next()
+	r.xs.Next()
 }
 
 // end
