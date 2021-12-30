@@ -278,7 +278,7 @@ func (p *surround[T]) Next() (ok bool) {
 
 func Intersperse[T any](x T) IterT[T] {
 	return func(xs Iterator[T]) Iterator[T] {
-		return Pipe(
+		return PipeI(
 			Const(x),
 			Zip(xs),
 			DropLast[T],
@@ -288,17 +288,31 @@ func Intersperse[T any](x T) IterT[T] {
 
 // end
 
-type IterT[T any] func(Iterator[T]) Iterator[T]
-
 // Pipe iterator definition
 
-func Pipe[T any](xs Iterator[T], fs ...IterT[T]) (rs Iterator[T]) {
-	s := Slice(fs)
-	rs = xs
-	for s.Next() {
-		rs = s.Current()(rs)
+type IterT[T any] func(Iterator[T]) Iterator[T]
+
+func PipeT[T any](fs ...IterT[T]) IterT[T] {
+	return func(xs Iterator[T]) (rs Iterator[T]) {
+		s := Slice(fs)
+		rs = xs
+		for s.Next() {
+			rs = s.Current()(rs)
+		}
+		return
 	}
-	return
+}
+
+func PipeI[T any](xs Iterator[T], fs ...IterT[T]) Iterator[T] {
+	return PipeT(fs...)(xs)
+}
+
+func PipeS[T any](xs []T, fs ...IterT[T]) []T {
+	rs := PipeI(
+		Slice(xs),
+		fs...,
+	)
+	return ToSlice(rs)
 }
 
 // end

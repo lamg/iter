@@ -16,9 +16,10 @@ func TestSlice(t *testing.T) {
 
 func TestFilter(t *testing.T) {
 	r := require.New(t)
-	ns := []int{0, 1, 2, 3, 4, 5}
-	xs := Filter(func(n int) bool { return n > 2 })(Slice(ns))
-	rs := ToSlice(xs)
+	rs := PipeS(
+		[]int{0, 1, 2, 3, 4, 5},
+		Filter(func(n int) bool { return n > 2 }),
+	)
 	r.Equal([]int{3, 4, 5}, rs)
 }
 
@@ -58,8 +59,10 @@ func TestDropLast(t *testing.T) {
 		},
 	}
 	for _, j := range ts {
-		xsi := DropLast(Slice(j.xs))
-		ms := ToSlice(xsi)
+		ms := PipeS(
+			j.xs,
+			DropLast[string],
+		)
 		r.Equal(j.rs, ms)
 	}
 }
@@ -74,19 +77,20 @@ func TestZip(t *testing.T) {
 		{xs: []string{"a", "b"}, rs: []string{"a", ",", "b", ","}},
 	}
 	for _, j := range ts {
-		xsi := Slice(j.xs)
-		ct := Const(",")
-		zi := Zip(xsi)(ct)
-		ms := ToSlice(zi)
-		r.Equal(j.rs, ms)
+		ms := PipeI(
+			Const(","),
+			Zip(Slice(j.xs)),
+		)
+		r.Equal(j.rs, ToSlice(ms))
 	}
 }
 
 func TestSurround(t *testing.T) {
 	r := require.New(t)
-	xs := Slice([]string{"aeo", "uu"})
-	p := Surround("(", ")")(xs)
-	sl := ToSlice(p)
+	sl := PipeS(
+		[]string{"aeo", "uu"},
+		Surround("(", ")"),
+	)
 	r.Equal([]string{"(", "aeo", "uu", ")"}, sl)
 }
 
@@ -100,20 +104,22 @@ func TestIntersperse(t *testing.T) {
 		{xs: []string{"a", "b"}, rs: []string{"a", ",", "b"}},
 	}
 	for _, j := range ts {
-		xsi := Intersperse(",")(Slice(j.xs))
-		ms := ToSlice(xsi)
+		ms := PipeS(j.xs, Intersperse(","))
 		r.Equal(j.rs, ms)
 	}
 }
 
 func TestPipe(t *testing.T) {
 	r := require.New(t)
-	c0 := []string{"aeo", "uu"}
-	rs := Pipe(
-		Slice(c0),
+	sl := PipeS(
+		[]string{"aeo", "uu"},
 		Intersperse(","),
 		Surround("(", ")"),
 	)
-	sl := ToSlice(rs)
 	r.Equal([]string{"(", "aeo", ",", "uu", ")"}, sl)
+
+	rs := PipeS(
+		[]int{1, 2, 3},
+	)
+	r.Equal([]int{1, 2, 3}, rs)
 }
