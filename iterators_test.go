@@ -90,21 +90,21 @@ func TestSurround(t *testing.T) {
 	r.Equal([]string{"(", "aeo", "uu", ")"}, sl)
 }
 
-//func TestIntersperse(t *testing.T) {
-//	r := require.New(t)
-//	ts := []struct {
-//		xs []string
-//		rs []string
-//	}{
-//		{xs: []string{"a"}, rs: []string{"a"}},
-//		{xs: []string{"a", "b"}, rs: []string{"a", ",", "b"}},
-//	}
-//	for _, j := range ts {
-//		xsi := Intersperse(Slice(j.xs), ",")
-//		ms := ToSlice(xsi)
-//		r.Equal(j.rs, ms)
-//	}
-//}
+func TestIntersperse(t *testing.T) {
+	r := require.New(t)
+	ts := []struct {
+		xs []string
+		rs []string
+	}{
+		{xs: []string{"a"}, rs: []string{"a"}},
+		{xs: []string{"a", "b"}, rs: []string{"a", ",", "b"}},
+	}
+	for _, j := range ts {
+		xsi := Intersperse(Slice(j.xs), ",")
+		ms := ToSlice(xsi)
+		r.Equal(j.rs, ms)
+	}
+}
 
 //func TestCompose(t *testing.T) {
 //	r := require.New(t)

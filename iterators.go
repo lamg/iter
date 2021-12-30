@@ -269,14 +269,14 @@ func (p *surround[T]) Next() (ok bool) {
 // end
 
 // Intersperse iterator definition
-//
-//func Intersperse[T any](xs Iterator[T], x T) (rs Iterator[T]) {
-//	rs = DropLast(Zip(xs, Const(x)))
-//	return
-//}
-//
-//// end
-//
+
+func Intersperse[T any](xs Iterator[T], x T) (rs Iterator[T]) {
+	rs = DropLast(Zip(xs, Const(x)))
+	return
+}
+
+// end
+
 //// Pipe iterator definition
 //
 //type pipe[T any] struct {
