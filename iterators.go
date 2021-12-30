@@ -56,8 +56,10 @@ type filter[T any] struct {
 	m  T
 }
 
-func Filter[T any](xs Iterator[T], f func(T) bool) Iterator[T] {
-	return &filter[T]{xs: xs, f: f}
+func Filter[T any](f func(T) bool) IterT[T] {
+	return func(xs Iterator[T]) Iterator[T] {
+		return &filter[T]{xs: xs, f: f}
+	}
 }
 
 func (b *filter[T]) Current() (m T) {
@@ -182,8 +184,10 @@ type zip[T any] struct {
 	ca   bool // consume from a
 }
 
-func Zip[T any](a, b Iterator[T]) Iterator[T] {
-	return &zip[T]{a: a, b: b, ca: true}
+func Zip[T any](a Iterator[T]) IterT[T] {
+	return func(b Iterator[T]) Iterator[T] {
+		return &zip[T]{a: a, b: b, ca: true}
+	}
 }
 
 func (r *zip[T]) Current() (m T) {
@@ -271,30 +275,23 @@ func (p *surround[T]) Next() (ok bool) {
 // Intersperse iterator definition
 
 func Intersperse[T any](xs Iterator[T], x T) (rs Iterator[T]) {
-	rs = DropLast(Zip(xs, Const(x)))
+	rs = DropLast(Zip(xs)(Const(x)))
 	return
 }
 
 // end
 
-//// Pipe iterator definition
-//
-//type pipe[T any] struct {
-//	xs Iterator[T]
-//	fs []func(Iterator[T]) Iterator[T]
-//	i  uint
-//}
-//
-//func Pipe[T any](xs Iterator[T], fs ...func(Iterator[T]) Iterator[T]) Iterator[T] {
-//	return &pipe[T]{xs: xs, fs: fs}
-//}
-//
-//func (p *pipe[T]) Current() (m T) {
-//	return
-//}
-//
-//func (p *pipe[T]) Next() (ok bool) {
-//
-//}
-//
-//// end
+type IterT[T any] func(Iterator[T]) Iterator[T]
+
+// Pipe iterator definition
+
+func Pipe[T any](xs Iterator[T], fs ...IterT[T]) (rs Iterator[T]) {
+	s := Slice(fs)
+	rs = xs
+	for s.Next() {
+		rs = s.Current()(rs)
+	}
+	return
+}
+
+// end

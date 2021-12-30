@@ -17,7 +17,7 @@ func TestSlice(t *testing.T) {
 func TestFilter(t *testing.T) {
 	r := require.New(t)
 	ns := []int{0, 1, 2, 3, 4, 5}
-	xs := Filter(Slice(ns), func(n int) bool { return n > 2 })
+	xs := Filter(func(n int) bool { return n > 2 })(Slice(ns))
 	rs := ToSlice(xs)
 	r.Equal([]int{3, 4, 5}, rs)
 }
@@ -76,7 +76,7 @@ func TestZip(t *testing.T) {
 	for _, j := range ts {
 		xsi := Slice(j.xs)
 		ct := Const(",")
-		zi := Zip(xsi, ct)
+		zi := Zip(xsi)(ct)
 		ms := ToSlice(zi)
 		r.Equal(j.rs, ms)
 	}
