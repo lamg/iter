@@ -278,7 +278,11 @@ func (p *surround[T]) Next() (ok bool) {
 
 func Intersperse[T any](x T) IterT[T] {
 	return func(xs Iterator[T]) Iterator[T] {
-		return DropLast(Zip(xs)(Const(x)))
+		return Pipe(
+			Const(x),
+			Zip(xs),
+			DropLast[T],
+		)
 	}
 }
 
