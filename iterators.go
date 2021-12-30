@@ -124,22 +124,22 @@ func (c *concat[T]) Next() (ok bool) {
 
 // Map iterator definition
 
-type mapi[T any, U any] struct {
+type map0[T any, U any] struct {
 	xs Iterator[T]
 	f  func(T) U
 }
 
 func Map0[T any, U any](xs Iterator[T], f func(T) U) Iterator[U] {
-	return &mapi[T, U]{xs: xs, f: f}
+	return &map0[T, U]{xs: xs, f: f}
 }
 
-func (r *mapi[T, U]) Current() (m U) {
+func (r *map0[T, U]) Current() (m U) {
 	n := r.xs.Current()
 	m = r.f(n)
 	return
 }
 
-func (r *mapi[T, U]) Next() (ok bool) {
+func (r *map0[T, U]) Next() (ok bool) {
 	ok = r.xs.Next()
 	return
 }
