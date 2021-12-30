@@ -1,10 +1,9 @@
 package iter
 
 func Exec(fs Iterator[func()]) {
-	m, ok := fs.Current()
-	for ok {
+	for fs.Next() {
+		m := fs.Current()
 		m()
-		m, ok = fs.Current()
 	}
 }
 

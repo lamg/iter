@@ -7,6 +7,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestSlice(t *testing.T) {
+	r := require.New(t)
+	ns := []int{0, 1, 2, 3, 4, 5}
+	rs := ToSlice(Slice(ns))
+	r.Equal(ns, rs)
+}
+
 func TestFilter(t *testing.T) {
 	r := require.New(t)
 	ns := []int{0, 1, 2, 3, 4, 5}
@@ -57,47 +64,47 @@ func TestDropLast(t *testing.T) {
 	}
 }
 
-func TestZip(t *testing.T) {
-	r := require.New(t)
-	ts := []struct {
-		xs []string
-		rs []string
-	}{
-		{xs: []string{"a"}, rs: []string{"a", ","}},
-		{xs: []string{"a", "b"}, rs: []string{"a", ",", "b", ","}},
-	}
-	for _, j := range ts {
-		xsi := Slice(j.xs)
-		ct := Const(",")
-		zi := Zip(xsi, ct)
-		ms := ToSlice(zi)
-		r.Equal(j.rs, ms)
-	}
-}
-
-func TestSurround(t *testing.T) {
-	r := require.New(t)
-	xs := Slice([]string{"aeo", "uu"})
-	p := Surround(xs, "(", ")")
-	sl := ToSlice(p)
-	r.Equal([]string{"(", "aeo", "uu", ")"}, sl)
-}
-
-func TestIntersperse(t *testing.T) {
-	r := require.New(t)
-	ts := []struct {
-		xs []string
-		rs []string
-	}{
-		{xs: []string{"a"}, rs: []string{"a"}},
-		{xs: []string{"a", "b"}, rs: []string{"a", ",", "b"}},
-	}
-	for _, j := range ts {
-		xsi := Intersperse(Slice(j.xs), ",")
-		ms := ToSlice(xsi)
-		r.Equal(j.rs, ms)
-	}
-}
+//func TestZip(t *testing.T) {
+//	r := require.New(t)
+//	ts := []struct {
+//		xs []string
+//		rs []string
+//	}{
+//		{xs: []string{"a"}, rs: []string{"a", ","}},
+//		{xs: []string{"a", "b"}, rs: []string{"a", ",", "b", ","}},
+//	}
+//	for _, j := range ts {
+//		xsi := Slice(j.xs)
+//		ct := Const(",")
+//		zi := Zip(xsi, ct)
+//		ms := ToSlice(zi)
+//		r.Equal(j.rs, ms)
+//	}
+//}
+//
+//func TestSurround(t *testing.T) {
+//	r := require.New(t)
+//	xs := Slice([]string{"aeo", "uu"})
+//	p := Surround(xs, "(", ")")
+//	sl := ToSlice(p)
+//	r.Equal([]string{"(", "aeo", "uu", ")"}, sl)
+//}
+//
+//func TestIntersperse(t *testing.T) {
+//	r := require.New(t)
+//	ts := []struct {
+//		xs []string
+//		rs []string
+//	}{
+//		{xs: []string{"a"}, rs: []string{"a"}},
+//		{xs: []string{"a", "b"}, rs: []string{"a", ",", "b"}},
+//	}
+//	for _, j := range ts {
+//		xsi := Intersperse(Slice(j.xs), ",")
+//		ms := ToSlice(xsi)
+//		r.Equal(j.rs, ms)
+//	}
+//}
 
 //func TestCompose(t *testing.T) {
 //	r := require.New(t)

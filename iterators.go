@@ -1,50 +1,48 @@
 package iter
 
 type Iterator[T any] interface {
-	Current() (T, bool)
-	Next()
+	Current() T
+	Next() bool
 }
 
 // Slice iterator definition
 
 type slice[T any] struct {
-	xs []T
-	i  int
-	ok bool
+	xs   []T
+	i    int
+	init bool
 }
 
 func Slice[T any](xs []T) Iterator[T] {
-	return &slice[T]{xs: xs, ok: len(xs) != 0}
+	return &slice[T]{xs: xs, init: true}
 }
 
 func Args[T any](xs ...T) Iterator[T] {
 	return Slice(xs)
 }
 
-func (p *slice[T]) Current() (m T, ok bool) {
-	ok = p.ok
-	if ok {
+func (p *slice[T]) Current() (m T) {
+	if p.i != len(p.xs) {
 		m = p.xs[p.i]
 	}
 	return
 }
 
-func (p *slice[T]) Next() {
-	if p.ok {
+func (p *slice[T]) Next() (ok bool) {
+	if p.init {
+		p.init = false
+	} else if p.i != len(p.xs) {
 		p.i = p.i + 1
 	}
-	p.ok = p.i != len(p.xs)
+	ok = p.i != len(p.xs)
+	return
 }
 
 func ToSlice[T any](p Iterator[T]) (rs []T) {
-	m, ok := p.Current()
 	rs = make([]T, 0)
-	for ok {
-		rs = append(rs, m)
-		p.Next()
-		m, ok = p.Current()
+	for p.Next() {
+		rs = append(rs, p.Current())
 	}
-
 	return
 }
 
@@ -55,25 +53,29 @@ func ToSlice[T any](p Iterator[T]) (rs []T) {
 type filter[T any] struct {
 	xs Iterator[T]
 	f  func(T) bool
+	m  T
 }
 
 func Filter[T any](xs Iterator[T], f func(T) bool) Iterator[T] {
 	return &filter[T]{xs: xs, f: f}
 }
 
-func (b *filter[T]) Current() (m T, ok bool) {
-	m, ok = b.xs.Current()
-	found := ok && b.f(m)
-	for ok && !found {
-		b.xs.Next()
-		m, ok = b.xs.Current()
-		found = ok && b.f(m)
-	}
+func (b *filter[T]) Current() (m T) {
+	m = b.m
 	return
 }
 
-func (b *filter[T]) Next() {
-	b.xs.Next()
+func (b *filter[T]) Next() (ok bool) {
+	hasMore := b.xs.Next()
+	for !ok && hasMore {
+		ok = b.f(b.xs.Current())
+		if !ok {
+			hasMore = b.xs.Next()
+		} else {
+			b.m = b.xs.Current()
+		}
+	}
+	return
 }
 
 // end
@@ -81,32 +83,39 @@ func (b *filter[T]) Next() {
 // Concat iterator definition
 
 func Concat[T any](xs Iterator[Iterator[T]]) (c Iterator[T]) {
-	c = &concat[T]{xs: xs}
+	it := &concat[T]{xs: xs}
+	it.ok = xs.Next()
+	if it.ok {
+		it.curr = xs.Current()
+	}
+	c = it
 	return
 }
 
 type concat[T any] struct {
-	xs Iterator[Iterator[T]]
+	xs   Iterator[Iterator[T]]
+	ok   bool
+	curr Iterator[T]
 }
 
-func (c *concat[T]) Current() (m T, ok bool) {
-	curr, okXs := c.xs.Current()
-	m, ok = curr.Current()
-	for okXs && !ok {
-		c.xs.Next()
-		curr, okXs = c.xs.Current()
-		if okXs {
-			m, ok = curr.Current()
-		}
+func (c *concat[T]) Current() (m T) {
+	if c.ok {
+		m = c.curr.Current()
 	}
 	return
 }
 
-func (c *concat[T]) Next() {
-	curr, ok := c.xs.Current()
-	if ok {
-		curr.Next()
+func (c *concat[T]) Next() (ok bool) {
+	for c.ok && !ok {
+		ok = c.curr.Next()
+		if !ok {
+			c.ok = c.xs.Next()
+			if c.ok {
+				c.curr = c.xs.Current()
+			}
+		}
 	}
+	return
 }
 
 // end
@@ -122,16 +131,15 @@ func Map[T any, U any](xs Iterator[T], f func(T) U) Iterator[U] {
 	return &mapi[T, U]{xs: xs, f: f}
 }
 
-func (r *mapi[T, U]) Current() (m U, ok bool) {
-	n, ok := r.xs.Current()
-	if ok {
-		m = r.f(n)
-	}
+func (r *mapi[T, U]) Current() (m U) {
+	n := r.xs.Current()
+	m = r.f(n)
 	return
 }
 
-func (r *mapi[T, U]) Next() {
-	r.xs.Next()
+func (r *mapi[T, U]) Next() (ok bool) {
+	ok = r.xs.Next()
+	return
 }
 
 // end
@@ -139,133 +147,150 @@ func (r *mapi[T, U]) Next() {
 // DropLast iterator definition
 
 type dropLast[T any] struct {
-	xs      Iterator[T]
-	m0, m1  T
-	hasNext bool // or m0 is last
+	xs     Iterator[T]
+	m0, m1 T
 }
 
 func DropLast[T any](xs Iterator[T]) Iterator[T] {
 	r := &dropLast[T]{xs: xs}
-	var ok bool
-	r.m0, ok = xs.Current()
-	if ok {
-		xs.Next()
-		r.m1, r.hasNext = xs.Current()
+	if xs.Next() {
+		r.m1 = xs.Current()
 	}
 	return r
 }
 
-func (r *dropLast[T]) Current() (m T, ok bool) {
-	if r.hasNext {
-		m, ok = r.m0, true
-	}
+func (r *dropLast[T]) Current() (m T) {
+	m = r.m0
 	return
 }
 
-func (r *dropLast[T]) Next() {
-	if r.hasNext {
+func (r *dropLast[T]) Next() (ok bool) {
+	if r.xs.Next() {
 		r.m0 = r.m1
-		r.xs.Next()
-		r.m1, r.hasNext = r.xs.Current()
+		r.m1 = r.xs.Current()
+		ok = true
 	}
+	return
 }
 
 // end
 
 // Zip iterator definition
 
-type zip[T any] struct {
-	a, b Iterator[T]
-	ca   bool // consume from a
-}
-
-func Zip[T any](a, b Iterator[T]) Iterator[T] {
-	return &zip[T]{a: a, b: b, ca: true}
-}
-
-func (r *zip[T]) Current() (m T, ok bool) {
-	if r.ca {
-		m, ok = r.a.Current()
-	} else {
-		m, ok = r.b.Current()
-	}
-	return
-}
-
-func (r *zip[T]) Next() {
-	if !r.ca {
-		r.a.Next()
-		r.b.Next()
-	}
-	r.ca = !r.ca
-}
-
-// end
-
-// Const iterator definition
-
-type consti[T any] struct {
-	curr T
-}
-
-func Const[T any](c T) Iterator[T] {
-	return &consti[T]{curr: c}
-}
-
-func (r *consti[T]) Current() (x T, ok bool) {
-	x, ok = r.curr, true
-	return
-}
-
-func (r *consti[T]) Next() {
-
-}
-
-// end
-
-// Surround iterator definition
-type surround[T any] struct {
-	xs                  Iterator[T]
-	a, b                T
-	first, middle, last bool
-}
-
-func Surround[T any](xs Iterator[T], a, b T) Iterator[T] {
-	return &surround[T]{xs: xs, a: a, b: b, first: true}
-}
-
-func (p *surround[T]) Current() (m T, ok bool) {
-	if p.first {
-		m, ok = p.a, true
-	} else if p.middle {
-		m, ok = p.xs.Current()
-		p.middle = ok
-		if !ok {
-			m, ok, p.last = p.b, true, true
-		}
-	} else if p.last {
-		m, ok = p.b, true
-	}
-	return
-}
-
-func (p *surround[T]) Next() {
-	if p.first {
-		p.first, p.middle = false, true
-	} else if p.middle {
-		p.xs.Next()
-	} else if p.last {
-		p.last = false
-	}
-}
-
-// end
-
-// Intersperse iterator definition
-
-func Intersperse[T any](xs Iterator[T], x T) (rs Iterator[T]) {
-	rs = DropLast(Zip(xs, Const(x)))
-	return
-}
-
-// end
+//type zip[T any] struct {
+//	a, b Iterator[T]
+//	ca   bool // consume from a
+//}
+//
+//func Zip[T any](a, b Iterator[T]) Iterator[T] {
+//	return &zip[T]{a: a, b: b, ca: true}
+//}
+//
+//func (r *zip[T]) Current() (m T, ok bool) {
+//	if r.ca {
+//		m, ok = r.a.Current()
+//	} else {
+//		m, ok = r.b.Current()
+//	}
+//	return
+//}
+//
+//func (r *zip[T]) Next() {
+//	if !r.ca {
+//		r.a.Next()
+//		r.b.Next()
+//	}
+//	r.ca = !r.ca
+//}
+//
+//// end
+//
+//// Const iterator definition
+//
+//type consti[T any] struct {
+//	curr T
+//}
+//
+//func Const[T any](c T) Iterator[T] {
+//	return &consti[T]{curr: c}
+//}
+//
+//func (r *consti[T]) Current() (x T, ok bool) {
+//	x, ok = r.curr, true
+//	return
+//}
+//
+//func (r *consti[T]) Next() {
+//
+//}
+//
+//// end
+//
+//// Surround iterator definition
+//type surround[T any] struct {
+//	xs                  Iterator[T]
+//	a, b                T
+//	first, middle, last bool
+//}
+//
+//func Surround[T any](xs Iterator[T], a, b T) Iterator[T] {
+//	return &surround[T]{xs: xs, a: a, b: b, first: true}
+//}
+//
+//func (p *surround[T]) Current() (m T, ok bool) {
+//	if p.first {
+//		m, ok = p.a, true
+//	} else if p.middle {
+//		m, ok = p.xs.Current()
+//		p.middle = ok
+//		if !ok {
+//			m, ok, p.last = p.b, true, true
+//		}
+//	} else if p.last {
+//		m, ok = p.b, true
+//	}
+//	return
+//}
+//
+//func (p *surround[T]) Next() {
+//	if p.first {
+//		p.first, p.middle = false, true
+//	} else if p.middle {
+//		p.xs.Next()
+//	} else if p.last {
+//		p.last = false
+//	}
+//}
+//
+//// end
+//
+//// Intersperse iterator definition
+//
+//func Intersperse[T any](xs Iterator[T], x T) (rs Iterator[T]) {
+//	rs = DropLast(Zip(xs, Const(x)))
+//	return
+//}
+//
+//// end
+//
+//// Pipe iterator definition
+//
+//type pipe[T any] struct {
+//	xs Iterator[T]
+//	fs []func(Iterator[T]) Iterator[T]
+//	i  uint
+//}
+//
+//func Pipe[T any](xs Iterator[T], fs ...func(Iterator[T]) Iterator[T]) Iterator[T] {
+//	return &pipe[T]{xs: xs, fs: fs}
+//}
+//
+//func (p *pipe[T]) Current() (m T) {
+//	return
+//}
+//
+//func (p *pipe[T]) Next() (ok bool) {
+//
+//}
+//
+//// end
