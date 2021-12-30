@@ -226,47 +226,49 @@ func (r *consti[T]) Next() (ok bool) {
 	return
 }
 
-//// end
-//
-//// Surround iterator definition
-//type surround[T any] struct {
-//	xs                  Iterator[T]
-//	a, b                T
-//	first, middle, last bool
-//}
-//
-//func Surround[T any](xs Iterator[T], a, b T) Iterator[T] {
-//	return &surround[T]{xs: xs, a: a, b: b, first: true}
-//}
-//
-//func (p *surround[T]) Current() (m T, ok bool) {
-//	if p.first {
-//		m, ok = p.a, true
-//	} else if p.middle {
-//		m, ok = p.xs.Current()
-//		p.middle = ok
-//		if !ok {
-//			m, ok, p.last = p.b, true, true
-//		}
-//	} else if p.last {
-//		m, ok = p.b, true
-//	}
-//	return
-//}
-//
-//func (p *surround[T]) Next() {
-//	if p.first {
-//		p.first, p.middle = false, true
-//	} else if p.middle {
-//		p.xs.Next()
-//	} else if p.last {
-//		p.last = false
-//	}
-//}
-//
-//// end
-//
-//// Intersperse iterator definition
+// end
+
+// Surround iterator definition
+type surround[T any] struct {
+	xs                  Iterator[T]
+	a, b                T
+	init                bool
+	first, middle, last bool
+}
+
+func Surround[T any](xs Iterator[T], a, b T) Iterator[T] {
+	return &surround[T]{xs: xs, a: a, b: b, init: true}
+}
+
+func (p *surround[T]) Current() (m T) {
+	if p.first {
+		m = p.a
+	} else if p.middle {
+		m = p.xs.Current()
+	} else if p.last {
+		m = p.b
+	}
+	return
+}
+
+func (p *surround[T]) Next() (ok bool) {
+	if p.init {
+		p.first, p.init = true, false
+	} else if p.first {
+		p.init, p.first, p.middle = false, false, p.xs.Next()
+	} else if p.middle {
+		p.middle = p.xs.Next()
+		p.last = !p.middle
+	} else if p.last {
+		p.last = false
+	}
+	ok = p.first || p.middle || p.last
+	return
+}
+
+// end
+
+// Intersperse iterator definition
 //
 //func Intersperse[T any](xs Iterator[T], x T) (rs Iterator[T]) {
 //	rs = DropLast(Zip(xs, Const(x)))

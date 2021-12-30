@@ -82,14 +82,14 @@ func TestZip(t *testing.T) {
 	}
 }
 
-//func TestSurround(t *testing.T) {
-//	r := require.New(t)
-//	xs := Slice([]string{"aeo", "uu"})
-//	p := Surround(xs, "(", ")")
-//	sl := ToSlice(p)
-//	r.Equal([]string{"(", "aeo", "uu", ")"}, sl)
-//}
-//
+func TestSurround(t *testing.T) {
+	r := require.New(t)
+	xs := Slice([]string{"aeo", "uu"})
+	p := Surround(xs, "(", ")")
+	sl := ToSlice(p)
+	r.Equal([]string{"(", "aeo", "uu", ")"}, sl)
+}
+
 //func TestIntersperse(t *testing.T) {
 //	r := require.New(t)
 //	ts := []struct {
