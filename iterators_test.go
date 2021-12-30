@@ -85,7 +85,7 @@ func TestZip(t *testing.T) {
 func TestSurround(t *testing.T) {
 	r := require.New(t)
 	xs := Slice([]string{"aeo", "uu"})
-	p := Surround(xs, "(", ")")
+	p := Surround("(", ")")(xs)
 	sl := ToSlice(p)
 	r.Equal([]string{"(", "aeo", "uu", ")"}, sl)
 }
@@ -100,21 +100,20 @@ func TestIntersperse(t *testing.T) {
 		{xs: []string{"a", "b"}, rs: []string{"a", ",", "b"}},
 	}
 	for _, j := range ts {
-		xsi := Intersperse(Slice(j.xs), ",")
+		xsi := Intersperse(",")(Slice(j.xs))
 		ms := ToSlice(xsi)
 		r.Equal(j.rs, ms)
 	}
 }
 
-//func TestCompose(t *testing.T) {
-//	r := require.New(t)
-//	c0 := []string{"aeo", "uu"}
-//	xs := Slice(c0)
-//	p0 := Intersperse(xs, ",")
-//	p1 := Surround(p0, "(", ")")
-//	sl := ToSlice(p1)
-//	r.Equal([]string{"(", "aeo", ",", "uu", ")"}, sl)
-//	ss := strings.Join(c0, ",")
-//	t.Log(ss)
-//}
-//
+func TestPipe(t *testing.T) {
+	r := require.New(t)
+	c0 := []string{"aeo", "uu"}
+	rs := Pipe(
+		Slice(c0),
+		Intersperse(","),
+		Surround("(", ")"),
+	)
+	sl := ToSlice(rs)
+	r.Equal([]string{"(", "aeo", ",", "uu", ")"}, sl)
+}

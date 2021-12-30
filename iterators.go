@@ -240,8 +240,10 @@ type surround[T any] struct {
 	first, middle, last bool
 }
 
-func Surround[T any](xs Iterator[T], a, b T) Iterator[T] {
-	return &surround[T]{xs: xs, a: a, b: b, init: true}
+func Surround[T any](a, b T) IterT[T] {
+	return func(xs Iterator[T]) Iterator[T] {
+		return &surround[T]{xs: xs, a: a, b: b, init: true}
+	}
 }
 
 func (p *surround[T]) Current() (m T) {
@@ -274,9 +276,10 @@ func (p *surround[T]) Next() (ok bool) {
 
 // Intersperse iterator definition
 
-func Intersperse[T any](xs Iterator[T], x T) (rs Iterator[T]) {
-	rs = DropLast(Zip(xs)(Const(x)))
-	return
+func Intersperse[T any](x T) IterT[T] {
+	return func(xs Iterator[T]) Iterator[T] {
+		return DropLast(Zip(xs)(Const(x)))
+	}
 }
 
 // end
