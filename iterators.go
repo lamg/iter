@@ -204,26 +204,26 @@ func (r *dropLast[T]) Next() (ok bool) {
 //}
 //
 //// end
-//
-//// Const iterator definition
-//
-//type consti[T any] struct {
-//	curr T
-//}
-//
-//func Const[T any](c T) Iterator[T] {
-//	return &consti[T]{curr: c}
-//}
-//
-//func (r *consti[T]) Current() (x T, ok bool) {
-//	x, ok = r.curr, true
-//	return
-//}
-//
-//func (r *consti[T]) Next() {
-//
-//}
-//
+
+// Const iterator definition
+type consti[T any] struct {
+	curr T
+}
+
+func Const[T any](c T) Iterator[T] {
+	return &consti[T]{curr: c}
+}
+
+func (r *consti[T]) Current() (m T) {
+	m = r.curr
+	return
+}
+
+func (r *consti[T]) Next() (ok bool) {
+	ok = true
+	return
+}
+
 //// end
 //
 //// Surround iterator definition
