@@ -33,9 +33,10 @@ func TestConcat(t *testing.T) {
 func TestMap(t *testing.T) {
 	r := require.New(t)
 	const tail = "kkkk"
-	xs := Slice([]string{"aeo", "uu"})
-	p := Map(xs, func(s string) string { return s + tail })
-	sl := ToSlice(p)
+	sl := PipeS(
+		[]string{"aeo", "uu"},
+		Map(func(s string) string { return s + tail }),
+	)
 	r.Equal([]string{"aeo" + tail, "uu" + tail}, sl)
 }
 

@@ -129,7 +129,7 @@ type mapi[T any, U any] struct {
 	f  func(T) U
 }
 
-func Map[T any, U any](xs Iterator[T], f func(T) U) Iterator[U] {
+func Map0[T any, U any](xs Iterator[T], f func(T) U) Iterator[U] {
 	return &mapi[T, U]{xs: xs, f: f}
 }
 
@@ -142,6 +142,12 @@ func (r *mapi[T, U]) Current() (m U) {
 func (r *mapi[T, U]) Next() (ok bool) {
 	ok = r.xs.Next()
 	return
+}
+
+func Map[T any](f func(T) T) IterT[T] {
+	return func(xs Iterator[T]) Iterator[T] {
+		return Map0(xs, f)
+	}
 }
 
 // end
