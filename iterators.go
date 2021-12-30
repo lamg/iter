@@ -177,33 +177,35 @@ func (r *dropLast[T]) Next() (ok bool) {
 
 // Zip iterator definition
 
-//type zip[T any] struct {
-//	a, b Iterator[T]
-//	ca   bool // consume from a
-//}
-//
-//func Zip[T any](a, b Iterator[T]) Iterator[T] {
-//	return &zip[T]{a: a, b: b, ca: true}
-//}
-//
-//func (r *zip[T]) Current() (m T, ok bool) {
-//	if r.ca {
-//		m, ok = r.a.Current()
-//	} else {
-//		m, ok = r.b.Current()
-//	}
-//	return
-//}
-//
-//func (r *zip[T]) Next() {
-//	if !r.ca {
-//		r.a.Next()
-//		r.b.Next()
-//	}
-//	r.ca = !r.ca
-//}
-//
-//// end
+type zip[T any] struct {
+	a, b Iterator[T]
+	ca   bool // consume from a
+}
+
+func Zip[T any](a, b Iterator[T]) Iterator[T] {
+	return &zip[T]{a: a, b: b, ca: true}
+}
+
+func (r *zip[T]) Current() (m T) {
+	if !r.ca {
+		m = r.a.Current()
+	} else {
+		m = r.b.Current()
+	}
+	return
+}
+
+func (r *zip[T]) Next() (ok bool) {
+	if r.ca {
+		ok = r.a.Next()
+	} else {
+		ok = r.b.Next()
+	}
+	r.ca = !r.ca
+	return
+}
+
+// end
 
 // Const iterator definition
 type consti[T any] struct {
