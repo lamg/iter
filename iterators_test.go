@@ -134,3 +134,12 @@ func TestCompositeTypePipe(t *testing.T) {
 	)
 	r.Equal(StrIntS("4", "5"), rs)
 }
+
+func TestAppend(t *testing.T) {
+	r := require.New(t)
+	rs := PipeS(
+		[]string{"a", "b"},
+		Append(Args("c", "d")),
+	)
+	r.Equal([]string{"a", "b", "c", "d"}, rs)
+}
