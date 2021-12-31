@@ -154,3 +154,15 @@ func TestAppConc(t *testing.T) {
 	)
 	r.Equal([]string{"a", "b", "c", "d", "e", "f"}, rs)
 }
+
+func TestAppConcP(t *testing.T) {
+	r := require.New(t)
+	rs := PipeS(
+		[]string{"a", "b"},
+		AppConcP(
+			Args(Args("c"), Args("e")),
+			Surround(Args("x"), Args("y")),
+		),
+	)
+	r.Equal([]string{"a", "b", "x", "c", "e", "y"}, rs)
+}
