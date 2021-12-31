@@ -27,6 +27,9 @@ func TestConcat(t *testing.T) {
 	its := Args(Slice([]int{0, 1, 2}), Slice([]int{3, 4}), Slice([]int{5}))
 	xs := ToSlice(Concat(its))
 	r.Equal([]int{0, 1, 2, 3, 4, 5}, xs)
+	its = Args(Slice([]int{}))
+	xs = ToSlice(Concat(its))
+	r.Equal([]int{}, xs)
 }
 
 func TestMap(t *testing.T) {
@@ -140,6 +143,7 @@ func TestAppend(t *testing.T) {
 	rs := PipeS(
 		[]string{"a", "b"},
 		Append(Args("c", "d")),
+		Append(Args[string]()),
 	)
 	r.Equal([]string{"a", "b", "c", "d"}, rs)
 }
@@ -165,4 +169,16 @@ func TestAppConcP(t *testing.T) {
 		),
 	)
 	r.Equal([]string{"a", "b", "x", "c", "e", "y"}, rs)
+}
+
+func TestZipDrop(t *testing.T) {
+	// checks that Zip doesn't go beyond if one iterator ends
+	// and that DropLast doesn't calls Zip.Next twice
+	r := require.New(t)
+	s := PipeS(
+		[]string{","},
+		Zip(Args[string]()),
+		DropLast[string],
+	)
+	r.Equal([]string{}, s)
 }

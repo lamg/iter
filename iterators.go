@@ -157,11 +157,13 @@ func Map[T any](f func(T) T) IterT[T] {
 type dropLast[T any] struct {
 	xs     Iterator[T]
 	m0, m1 T
+	ok     bool
 }
 
 func DropLast[T any](xs Iterator[T]) Iterator[T] {
 	r := &dropLast[T]{xs: xs}
-	if xs.Next() {
+	r.ok = xs.Next()
+	if r.ok {
 		r.m1 = xs.Current()
 	}
 	return r
@@ -173,10 +175,13 @@ func (r *dropLast[T]) Current() (m T) {
 }
 
 func (r *dropLast[T]) Next() (ok bool) {
-	if r.xs.Next() {
-		r.m0 = r.m1
-		r.m1 = r.xs.Current()
-		ok = true
+	if r.ok {
+		ok = r.xs.Next()
+		if ok {
+			r.m0 = r.m1
+			r.m1 = r.xs.Current()
+		}
+		r.ok = ok
 	}
 	return
 }
@@ -188,11 +193,12 @@ func (r *dropLast[T]) Next() (ok bool) {
 type zip[T any] struct {
 	a, b Iterator[T]
 	ca   bool // consume from a
+	ok   bool
 }
 
 func Zip[T any](a Iterator[T]) IterT[T] {
 	return func(b Iterator[T]) Iterator[T] {
-		return &zip[T]{a: a, b: b, ca: true}
+		return &zip[T]{a: a, b: b, ca: true, ok: true}
 	}
 }
 
@@ -206,12 +212,15 @@ func (r *zip[T]) Current() (m T) {
 }
 
 func (r *zip[T]) Next() (ok bool) {
-	if r.ca {
-		ok = r.a.Next()
-	} else {
-		ok = r.b.Next()
+	if r.ok {
+		if r.ca {
+			ok = r.a.Next()
+		} else {
+			ok = r.b.Next()
+		}
+		r.ok = ok
+		r.ca = !r.ca
 	}
-	r.ca = !r.ca
 	return
 }
 
