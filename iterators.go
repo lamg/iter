@@ -326,8 +326,14 @@ func PipeS[T any](xs []T, fs ...IterT[T]) []T {
 // Append iterator end
 
 func Append[T any](xs Iterator[T]) IterT[T] {
-	return func(ps Iterator[T]) (rs Iterator[T]) {
+	return func(ps Iterator[T]) Iterator[T] {
 		return Concat(Args(ps, xs))
+	}
+}
+
+func AppConc[T any](xss Iterator[Iterator[T]]) IterT[T] {
+	return func(ps Iterator[T]) Iterator[T] {
+		return Append(Concat(xss))(ps)
 	}
 }
 

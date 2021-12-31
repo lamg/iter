@@ -143,3 +143,14 @@ func TestAppend(t *testing.T) {
 	)
 	r.Equal([]string{"a", "b", "c", "d"}, rs)
 }
+
+func TestAppConc(t *testing.T) {
+	r := require.New(t)
+	rs := PipeS(
+		[]string{"a", "b"},
+		AppConc(
+			Args(Args("c", "d"), Args("e", "f")),
+		),
+	)
+	r.Equal([]string{"a", "b", "c", "d", "e", "f"}, rs)
+}
