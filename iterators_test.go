@@ -1,7 +1,6 @@
 package iter
 
 import (
-	//	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -123,4 +122,15 @@ func TestPipe(t *testing.T) {
 		[]int{1, 2, 3},
 	)
 	r.Equal([]int{1, 2, 3}, rs)
+}
+
+func TestCompositeTypePipe(t *testing.T) {
+	r := require.New(t)
+	rs := PipeS(
+		IntStrS(1, 2, 3, 4),
+		Filter(Gt[IntStr](2)),
+		Map(Plus(NewIntStrN, 1)),
+		Map(IntToStr),
+	)
+	r.Equal(StrIntS("4", "5"), rs)
 }
