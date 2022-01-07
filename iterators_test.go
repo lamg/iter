@@ -1,6 +1,7 @@
 package iter
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -181,4 +182,59 @@ func TestZipDrop(t *testing.T) {
 		DropLast[string],
 	)
 	r.Equal([]string{}, s)
+}
+
+func TestSql0(t *testing.T) {
+	attrs := []string{"name", "age"}
+	sqlS := PipeS(
+		attrs,
+		Intersperse(", "),
+		Surround("(", ")"),
+		Surround("INSERT INTO table ", " VALUES"),
+	)
+	sql := strings.Join(sqlS, "")
+	t.Log("sql:", sql)
+}
+
+func TestSql1(t *testing.T) {
+	tuples := [][]string{{"'X'", "'Y'"}, {"'W'", "'Z'"}}
+	// a conversion from [][]string to Iterator[Iterator[string]] is needed
+	// in order to use have a transformable version of the elements in tuples
+	ts := Map0(Slice(tuples), Slice[string])
+	sqlS := PipeI(
+		ts,
+		Map(
+			PipeT(
+				Intersperse(", "),
+				Surround("(", ")"),
+			),
+		),
+		Intersperse(Args(",")),
+	)
+	rs := ToSlice(Map0(sqlS, ToSlice[string]))
+	t.Log("tail:", rs)
+}
+
+func TestSql(t *testing.T) {
+	attrs := []string{"name", "age"}
+	tuples := [][]string{{"'Ronnie'", "53"}, {"'Richie'", "23"}}
+	ts := Map0(Slice(tuples), Slice[string])
+	sqlS := PipeS(
+		attrs,
+		Intersperse(", "),
+		Surround("(", ")"),
+		Surround("INSERT INTO table ", " VALUES "),
+		AppConcP(
+			ts,
+			Map(
+				PipeT(
+					Intersperse(", "),
+					Surround("(", ")"),
+				),
+			),
+			Intersperse(Args(",")),
+		),
+	)
+	sql := strings.Join(sqlS, "")
+	t.Log("sql:", sql)
 }
