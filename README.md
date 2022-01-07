@@ -1,3 +1,6 @@
+
+[![Go Reference](https://pkg.go.dev/badge/github.com/lamg/iter.svg)](https://pkg.go.dev/github.com/lamg/iter)
+
 # A library for making composable iterators
 
 Composability is one of the main ingredients of elegance. When you have basic operations easy to understand in isolation, but allow you to solve complex problems by combining them, you're in the right track. Everything else falls into forgiveness or breaks your stream of thoughts.
