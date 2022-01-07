@@ -1,4 +1,4 @@
-module gitlab.com/lamg/iter
+module github.com/lamg/iter
 
 go 1.18
 
