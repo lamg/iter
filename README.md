@@ -18,7 +18,7 @@ func TestSql0(t *testing.T) {
 		attrs,
 		Intersperse(", "),
 		Surround("(", ")"),
-        Surround("INSERT INTO table ", " VALUES"),
+		Surround("INSERT INTO table ", " VALUES"),
 	)
 	sql := strings.Join(sqlS, "")
 	t.Log("sql:", sql)
