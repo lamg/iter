@@ -1,11 +1,11 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/lamg/iter.svg)](https://pkg.go.dev/github.com/lamg/iter)
 
-# A library for making composable iterators
+### A library for making composable iterators
 
-Composability is one of the main ingredients of elegance. When you have basic operations easy to understand in isolation, but allow you to solve complex problems by combining them, you're in the right track. Everything else falls into forgiveness or breaks your stream of thoughts.
+[Composability][2] is one of the main ingredients of elegance. When you have basic operations easy to understand in isolation, but allow you to solve complex problems by combining them, you're in the right track. Everything else falls into oblivion or breaks your stream of thoughts.
 
-Let's say we have data in Go to insert in a relational database. The column names are in a string slice `attrs`. The values to be inserted are in a variable `tuples` of type `[][]string`. With that we are going to create a proper [SQL INSERT][0] statement. The basic idea for solving this problem is surrounding the elements in `attrs` with parethesis, and intercalating commas between them, then prefixing `INSERT INTO table` and suffixing with `VALUES`. The remaining will be done later, let's solve this one first using [github.com/lamg/iter][1]:
+Let's say we have data in Go to insert in a relational database. The column names are in a string slice `attrs`. The values to be inserted are in a variable `tuples` of type `[][]string`. With that we are going to create a proper [SQL INSERT][0] statement. The basic idea for solving this problem is surrounding the elements in `attrs` with parenthesis, and intercalating commas between them, then prefixing `INSERT INTO table` and suffixing with `VALUES`. The remaining will be done later, let's solve this one first using [github.com/lamg/iter][1]:
 
 ```go
 package main
@@ -126,3 +126,4 @@ The reader can embellish it with new line characters and `;` so the output is mo
 
 [0]: https://en.wikipedia.org/wiki/Insert_(SQL)
 [1]: https://github.com/lamg/iter
+[2]: https://github.com/hmemcpy/milewski-ctfp-pdf
